@@ -32,12 +32,12 @@ const failed = (h, { statusCode, message }) => {
   return baseResponse(h, { status: 'fail', statusCode, message });
 };
 
-const systemFailed = (h, { statusCode, message }) => {
+const systemFailed = (h, { message }) => {
   if (statusCode < 500 || statusCode > 599) {
     throw new Error('Invalid system failed status code (must be between 500 - 599)');
   }
 
-  return baseResponse(h, { status: 'fail', statusCode, message });
+  return baseResponse(h, { status: 'error', statusCode: 500, message });
 };
 
 const succeed = (h, { message = null, data = null }) => baseResponse(
@@ -50,4 +50,6 @@ const created = (h, { message = null, data = null }) => baseResponse(
   { statusCode: 201, message, data },
 );
 
-module.exports = { succeed, created, failed };
+module.exports = {
+  succeed, created, failed, systemFailed,
+};

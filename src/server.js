@@ -7,6 +7,7 @@ const albumPlugin = require('./api/albums/index');
 const { SongService } = require('./services/postgres/SongService');
 const { SongValidator } = require('./validators/song/index');
 const songPlugin = require('./api/songs/index');
+const { failed, systemFailed } = require('./api/responseObject');
 
 async function init() {
   const server = Hapi.server({
@@ -23,22 +24,17 @@ async function init() {
     const { response } = request;
 
     if (response instanceof ClientError) {
-      const newResponse = h.response({
-        status: 'fail',
+      return failed(h, {
+        statusCode: response.statusCode,
         message: response.message,
       });
-      newResponse.code(response.statusCode);
-      return newResponse;
     }
 
     if (response instanceof Error) {
       console.error('Unexpected error has occured', response.stack);
-      const newResponse = h.response({
-        status: 'error',
+      return systemFailed(h, {
         message: 'There was an error on our server while processing your request',
       });
-      newResponse.code(500);
-      return newResponse;
     }
 
     return h.continue;
