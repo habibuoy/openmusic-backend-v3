@@ -27,7 +27,7 @@ class AlbumService {
   }
 
   async getAlbumById(id) {
-    const query = {
+    let query = {
       text: 'SELECT * FROM albums WHERE id = $1',
       values: [id],
     };
@@ -38,7 +38,20 @@ class AlbumService {
       throw new NotFoundError(`Album with id '${id}' was not found`);
     }
 
-    return rows[0];
+    const album = rows[0];
+    query = {
+      text: 'SELECT * FROM songs WHERE album_id = $1',
+      values: [album.id],
+    };
+
+    const result = await this._pool.query(query);
+    const songs = result.rows.map((s) => ({
+      id: s.id,
+      title: s.id,
+      performer: s.performer,
+    }));
+
+    return { ...album, songs };
   }
 
   async updateAlbumById(id, { name, year }) {
