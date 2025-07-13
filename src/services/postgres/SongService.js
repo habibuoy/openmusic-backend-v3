@@ -29,9 +29,23 @@ class SongService {
     return rows.map(songMapper.fromDb)[0];
   }
 
-  async getSongs() {
+  async getSongs(songQuery) {
+    let { title, performer } = songQuery;
+
+    const queryOperator = title !== undefined && performer !== undefined
+      ? 'AND'
+      : 'OR';
+
+    if (title === undefined && performer === undefined) {
+      title = '';
+      performer = '';
+    }
+
     const query = {
-      text: 'SELECT * FROM songs',
+      text: `SELECT * FROM songs 
+        WHERE title ilike $1 ${queryOperator}
+          performer ilike $2`,
+      values: [`${title}%`, `${performer}%`],
     };
 
     const result = await this._pool.query(query);

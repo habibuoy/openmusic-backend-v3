@@ -15,7 +15,9 @@ class SongHandler {
   }
 
   async getSongsHandler(request, h) {
-    const result = await this._service.getSongs();
+    this._validator.validateSongQuery(request.query);
+
+    const result = await this._service.getSongs(request.query);
 
     const songs = result.map((s) => ({
       id: s.id, title: s.title, performer: s.performer,
