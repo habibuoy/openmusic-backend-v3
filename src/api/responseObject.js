@@ -32,13 +32,9 @@ const failed = (h, { statusCode, message }) => {
   return baseResponse(h, { status: 'fail', statusCode, message });
 };
 
-const systemFailed = (h, { message }) => {
-  if (statusCode < 500 || statusCode > 599) {
-    throw new Error('Invalid system failed status code (must be between 500 - 599)');
-  }
-
-  return baseResponse(h, { status: 'error', statusCode: 500, message });
-};
+const systemFailed = (h, { message }) => baseResponse(h, {
+  status: 'error', statusCode: 500, message,
+});
 
 const succeed = (h, { message = null, data = null }) => baseResponse(
   h,
