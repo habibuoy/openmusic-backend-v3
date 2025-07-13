@@ -11,7 +11,7 @@
     },
     "rules": {
         "no-console": "off",
-        "no-underscore-dangle":"warn",
+        "no-underscore-dangle":"off",
         "no-unused-vars": "warn",
         "no-unexpected-multiline": "error",
         "no-undef": "off"
