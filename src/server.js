@@ -30,7 +30,10 @@ async function init() {
       });
     }
 
-    if (response instanceof Error) {
+    if (response instanceof Error
+        && response.output.statusCode >= 500
+        && response.output.statusCode < 600
+    ) {
       console.error('Unexpected error has occured', response.stack);
       return systemFailed(h, {
         message: 'There was an error on our server while processing your request',
