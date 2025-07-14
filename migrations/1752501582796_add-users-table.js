@@ -1,6 +1,7 @@
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
+export const shorthands = undefined;
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
@@ -8,34 +9,23 @@
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-  pgm.createTable('songs', {
+  pgm.createTable('users', {
     id: {
-      type: 'VARCHAR(21)',
+      type: 'VARCHAR(16)',
       primaryKey: true,
     },
-    title: {
+    username: {
+      type: 'TEXT',
+      unique: true,
+      notNull: true,
+    },
+    password: {
       type: 'TEXT',
       notNull: true,
     },
-    year: {
-      type: 'INTEGER',
-      notNull: true,
-    },
-    genre: {
+    fullname: {
       type: 'TEXT',
       notNull: true,
-    },
-    performer: {
-      type: 'TEXT',
-      notNull: true,
-    },
-    duration: {
-      type: 'INTEGER',
-      notNull: false,
-    },
-    album_id: {
-      type: 'TEXT',
-      notNull: false,
     },
   });
 };
@@ -46,5 +36,5 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
-  pgm.dropTable('songs');
+  pgm.dropTable('users');
 };
