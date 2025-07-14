@@ -32,7 +32,7 @@ class UserService {
     return rows[0].id;
   }
 
-  async authenticateUser(username, password) {
+  async verifyUserCredentials(username, password) {
     const query = {
       text: 'SELECT id, password FROM users WHERE username = username',
       values: [username],
