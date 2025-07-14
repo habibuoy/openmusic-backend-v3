@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
+const Jwt = require('@hapi/jwt');
 const { ClientError } = require('./errors/ClientError');
 const { AlbumService } = require('./services/postgres/AlbumService');
 const { AlbumValidator } = require('./validators/album/index');
@@ -11,6 +12,11 @@ const { failed, systemFailed } = require('./api/responseObject');
 const { UserService } = require('./services/postgres/UserService');
 const { UserValidator } = require('./validators/user');
 const userPlugin = require('./api/users');
+const { AuthenticationService } = require('./services/postgres/AuthenticationService');
+const { AuthenticationValidator } = require('./validators/authentication');
+const authPlugin = require('./api/authentications');
+const { TokenManager } = require('./tokenizer/TokenManager');
+const AuthConstants = require('./auth');
 
 async function init() {
   const server = Hapi.server({
@@ -21,6 +27,24 @@ async function init() {
         origin: ['*'],
       },
     },
+  });
+
+  await server.register({
+    plugin: Jwt,
+  });
+
+  server.auth.strategy(AuthConstants.JwtAuthStrategyName, AuthConstants.JwtAuthScheme, {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: { userId: artifacts.payload.userId },
+    }),
   });
 
   server.ext('onPreResponse', (request, h) => {
@@ -70,6 +94,17 @@ async function init() {
     options: {
       userService,
       validator: UserValidator,
+    },
+  });
+
+  const authService = new AuthenticationService();
+  await server.register({
+    plugin: authPlugin,
+    options: {
+      authService,
+      userService,
+      validator: AuthenticationValidator,
+      tokenManager: TokenManager,
     },
   });
 
