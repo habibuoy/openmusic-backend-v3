@@ -34,7 +34,7 @@ class UserService {
 
   async verifyUserCredentials(username, password) {
     const query = {
-      text: 'SELECT id, password FROM users WHERE username = username',
+      text: 'SELECT id, password FROM users WHERE username = $1',
       values: [username],
     };
 
@@ -63,7 +63,6 @@ class UserService {
 
     const { rows } = await this._pool.query(query);
 
-    console.log(rows);
     if (rows.length && rows.length > 0) {
       throw new InvariantError(`Failed to add user. Username ${username} already exists`);
     }
