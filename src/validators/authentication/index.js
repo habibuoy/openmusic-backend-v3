@@ -1,4 +1,5 @@
-const { InvariantError } = require('../../errors/InvariantError');
+const SchemaValidator = require('../SchemaValidator');
+
 const {
   PostAuthenticationPayloadSchema,
   PutAuthenticationPayloadSchema,
@@ -6,24 +7,17 @@ const {
 } = require('./schema');
 
 const AuthenticationValidator = {
-  validatePostPayload: (payload) => {
-    const validationResult = PostAuthenticationPayloadSchema.validate(payload);
-    if (validationResult.error) {
-      throw new InvariantError(validationResult.error.message);
-    }
-  },
-  validatePutPayload: (payload) => {
-    const validationResult = PutAuthenticationPayloadSchema.validate(payload);
-    if (validationResult.error) {
-      throw new InvariantError(validationResult.error.message);
-    }
-  },
-  validateDeletePayload: (payload) => {
-    const validationResult = DeleteAuthenticationPayloadSchema.validate(payload);
-    if (validationResult.error) {
-      throw new InvariantError(validationResult.error.message);
-    }
-  },
+  validatePostPayload: (payload) => SchemaValidator({
+    schema: PostAuthenticationPayloadSchema, obj: payload,
+  }),
+  validatePutPayload: (payload) => SchemaValidator({
+    schema: PutAuthenticationPayloadSchema,
+    obj: payload,
+  }),
+  validateDeletePayload: (payload) => SchemaValidator({
+    schema: DeleteAuthenticationPayloadSchema,
+    obj: payload,
+  }),
 };
 
 module.exports = { AuthenticationValidator };
