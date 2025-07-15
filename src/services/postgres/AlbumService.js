@@ -27,8 +27,16 @@ class AlbumService {
   }
 
   async getAlbumById(id) {
-    let query = {
-      text: 'SELECT * FROM albums WHERE id = $1',
+    const query = {
+      text: `
+        SELECT a.id, a.name, a.year, 
+          COALESCE(json_agg(json_build_object('id', s.id, 'title', s.title, 'performer', s.performer)) 
+          FILTER (WHERE s.id IS NOT NULL), '[]') as songs
+        FROM albums a
+        LEFT JOIN songs s ON s.album_id = a.id
+        WHERE a.id = $1
+        group by a.id
+      `,
       values: [id],
     };
 
@@ -38,20 +46,7 @@ class AlbumService {
       throw new NotFoundError(`Album with id '${id}' was not found`);
     }
 
-    const album = rows[0];
-    query = {
-      text: 'SELECT * FROM songs WHERE album_id = $1',
-      values: [album.id],
-    };
-
-    const result = await this._pool.query(query);
-    const songs = result.rows.map((s) => ({
-      id: s.id,
-      title: s.id,
-      performer: s.performer,
-    }));
-
-    return { ...album, songs };
+    return rows[0];
   }
 
   async updateAlbumById(id, { name, year }) {
