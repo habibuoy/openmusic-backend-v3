@@ -1,7 +1,9 @@
+const BasePath = '/users';
+
 const routes = (handler) => [
   {
     method: 'POST',
-    path: '/users',
+    path: BasePath,
     handler: (request, h) => handler.postUserHandler(request, h),
   },
 ];

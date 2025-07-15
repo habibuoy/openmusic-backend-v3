@@ -1,22 +1,25 @@
+const BasePath = '/albums';
+const BasePathWithIdParam = `${BasePath}/{id}`;
+
 const routes = (handlers) => [
   {
     method: 'POST',
-    path: '/albums',
+    path: BasePath,
     handler: (request, h) => handlers.postAlbumHandler(request, h),
   },
   {
     method: 'GET',
-    path: '/albums/{id}',
+    path: BasePathWithIdParam,
     handler: (request, h) => handlers.getAlbumByIdHandler(request, h),
   },
   {
     method: 'PUT',
-    path: '/albums/{id}',
+    path: BasePathWithIdParam,
     handler: (request, h) => handlers.putAlbumByIdHandler(request, h),
   },
   {
     method: 'DELETE',
-    path: '/albums/{id}',
+    path: BasePathWithIdParam,
     handler: (request, h) => handlers.deleteAlbumByIdHandler(request, h),
   },
 ];
