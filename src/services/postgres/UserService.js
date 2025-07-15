@@ -14,7 +14,7 @@ class UserService {
   async addUser({ username, password, fullname }) {
     await this.verifyNewUsername(username);
 
-    const id = nanoid(16);
+    const id = `user-${nanoid(16)}`;
     const hashedPassword = await bcrypt.hash(password, PasswordHashRoundCount);
 
     const query = {
@@ -23,7 +23,6 @@ class UserService {
     };
 
     const { rows } = await this._pool.query(query);
-    console.log(rows);
 
     if (!rows.length) {
       throw new InvariantError('Failed to add user');
