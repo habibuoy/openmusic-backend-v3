@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 const { InvariantError } = require('../../errors/InvariantError');
 const { NotFoundError } = require('../../errors/NotFoundError');
 const { AuthorizationError } = require('../../errors/AuthorizationError');
+const PlaylistActivityActionType = require('../PlaylistActivityActionType');
 
 class PlaylistService {
   constructor() {
@@ -73,6 +74,43 @@ class PlaylistService {
     return rows[0];
   }
 
+  async getActivities(id) {
+    const query = {
+      text: `
+        SELECT p.id AS playlist_id,
+          COALESCE(a.activities, '[]') activities
+        FROM playlists p
+        INNER JOIN (
+          SELECT playlist_id, json_agg(
+            json_build_object(
+              'username', u.username, 
+              'title', s.title, 
+              'action', pa.action,
+              'time', pa.time
+            )
+          ) activities
+          FROM playlist_activities pa
+          LEFT JOIN users u ON u.id = pa.user_id
+          INNER JOIN songs s ON s.id = pa.song_id
+          GROUP BY pa.playlist_id
+        ) a ON a.playlist_id = p.id
+        WHERE p.id = $1
+      `,
+      values: [id],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    if (!rows.length) {
+      throw new NotFoundError(`Playlist with id ${id}} was not found`);
+    }
+
+    return {
+      playlistId: rows[0].playlist_id,
+      activities: rows[0].activities,
+    };
+  }
+
   async addSongToPlaylist(playlistId, songId) {
     const id = nanoid(16);
 
@@ -86,6 +124,23 @@ class PlaylistService {
     if (!rows.length) {
       throw new InvariantError(`Failed to add song with id ${songId} to playlist with id ${playlistId}`);
     }
+  }
+
+  async addPlaylistActivity({
+    playlistId,
+    songId,
+    userId,
+    action = PlaylistActivityActionType.ERR,
+  }) {
+    const id = `actv-${nanoid(16)}`;
+    const inputTime = (new Date()).toUTCString();
+
+    const query = {
+      text: 'INSERT INTO playlist_activities VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      values: [id, playlistId, songId, userId, action, inputTime],
+    };
+
+    await this._pool.query(query);
   }
 
   async deletePlaylist(id) {

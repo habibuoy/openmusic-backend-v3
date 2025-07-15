@@ -3,6 +3,7 @@ const { JwtAuthStrategyName } = require('../../auth');
 const BasePath = '/playlists';
 const BaseWithIdParamPath = `${BasePath}/{id}`;
 const SongsPath = `${BaseWithIdParamPath}/songs`;
+const ActivitiesPath = `${BaseWithIdParamPath}/activities`;
 
 const routes = (handlers) => [
   {
@@ -49,6 +50,14 @@ const routes = (handlers) => [
     method: 'DELETE',
     path: SongsPath,
     handler: (request, h) => handlers.deleteSongsHandler(request, h),
+    options: {
+      auth: JwtAuthStrategyName,
+    },
+  },
+  {
+    method: 'GET',
+    path: ActivitiesPath,
+    handler: (request, h) => handlers.getActivitiesHandler(request, h),
     options: {
       auth: JwtAuthStrategyName,
     },

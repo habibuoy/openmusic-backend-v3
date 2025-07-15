@@ -1,6 +1,7 @@
 const { AuthorizationError } = require('../../errors/AuthorizationError');
 const { ClientError } = require('../../errors/ClientError');
 const { NotFoundError } = require('../../errors/NotFoundError');
+const PlaylistActivityActionType = require('../../services/PlaylistActivityActionType');
 const { succeed, created } = require('../responseObject');
 
 class PlaylistHandler {
@@ -68,6 +69,13 @@ class PlaylistHandler {
 
     await this._service.addSongToPlaylist(id, songId);
 
+    await this._service.addPlaylistActivity({
+      playlistId: id,
+      songId,
+      userId,
+      action: PlaylistActivityActionType.ADD,
+    });
+
     return created(h, {
       message: 'Successfully added song to playlist',
     });
@@ -96,10 +104,31 @@ class PlaylistHandler {
     const { songId } = request.payload;
 
     await this._verifyPlaylistAccess(id, userId);
+
     await this._service.deleteSongFromPlaylist(id, songId);
+
+    await this._service.addPlaylistActivity({
+      playlistId: id,
+      songId,
+      userId,
+      action: PlaylistActivityActionType.DLT,
+    });
 
     return succeed(h, {
       message: 'Successfully deleted song from playlist',
+    });
+  }
+
+  async getActivitiesHandler(request, h) {
+    const { userId } = request.auth.credentials;
+    const { id: playlistId } = request.params;
+
+    await this._verifyPlaylistAccess(playlistId, userId);
+
+    const result = await this._service.getActivities(playlistId);
+
+    return succeed(h, {
+      data: result,
     });
   }
 
