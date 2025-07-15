@@ -1,9 +1,18 @@
+const { AuthorizationError } = require('../../errors/AuthorizationError');
+const { ClientError } = require('../../errors/ClientError');
+const { NotFoundError } = require('../../errors/NotFoundError');
 const { succeed, created } = require('../responseObject');
 
 class PlaylistHandler {
-  constructor(playlistService, songService, playlistValidator) {
+  constructor(
+    playlistService,
+    songService,
+    collaborationService,
+    playlistValidator,
+  ) {
     this._service = playlistService;
     this._songService = songService;
+    this._collaborationService = collaborationService;
     this._validator = playlistValidator;
   }
 
@@ -53,7 +62,7 @@ class PlaylistHandler {
     const { songId } = request.payload;
     const { id } = request.params;
 
-    await this._service.verifyPlaylistOwner(id, userId);
+    await this._verifyPlaylistAccess(id, userId);
 
     await this._songService.getSongById(songId);
 
@@ -68,7 +77,7 @@ class PlaylistHandler {
     const { userId } = request.auth.credentials;
     const { id } = request.params;
 
-    await this._service.verifyPlaylistOwner(id, userId);
+    await this._verifyPlaylistAccess(id, userId);
 
     const result = await this._service.getPlaylistSongs(id);
 
@@ -86,12 +95,34 @@ class PlaylistHandler {
     const { id } = request.params;
     const { songId } = request.payload;
 
-    await this._service.verifyPlaylistOwner(id, userId);
+    await this._verifyPlaylistAccess(id, userId);
     await this._service.deleteSongFromPlaylist(id, songId);
 
     return succeed(h, {
       message: 'Successfully deleted song from playlist',
     });
+  }
+
+  async _verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this._service.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      if (error instanceof AuthorizationError) {
+        try {
+          await this._collaborationService.verifyCollaboration({ playlistId, userId });
+        } catch (collabError) {
+          if (collabError instanceof ClientError) {
+            throw error;
+          }
+
+          throw collabError;
+        }
+      }
+    }
   }
 }
 

@@ -31,7 +31,8 @@ class PlaylistService {
       text: `
         SELECT p.id, p.name, u.username FROM playlists p
         INNER JOIN users u ON u.id = p.owner_id
-        WHERE owner_id = $1
+        INNER JOIN collaborations c ON c.playlist_id = p.id
+        WHERE p.owner_id = $1 OR c.user_id = $1
       `,
       values: [ownerId],
     };

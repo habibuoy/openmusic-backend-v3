@@ -3,6 +3,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const { InvariantError } = require('../../errors/InvariantError');
 const { AuthenticationError } = require('../../errors/AuthenticationError');
+const { NotFoundError } = require('../../errors/NotFoundError');
 
 const PasswordHashRoundCount = 10;
 
@@ -29,6 +30,21 @@ class UserService {
     }
 
     return rows[0].id;
+  }
+
+  async getUser(id) {
+    const query = {
+      text: 'SELECT * FROM users WHERE id = $1',
+      values: [id],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    if (!rows.length) {
+      throw new NotFoundError(`User with id ${id} was not found`);
+    }
+
+    return rows[0];
   }
 
   async verifyUserCredentials(username, password) {
