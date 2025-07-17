@@ -1,31 +1,31 @@
 const BasePath = '/songs';
 const BasePathWithIdParam = `${BasePath}/{id}`;
 
-const routes = (handlers) => [
+const routes = (handler) => [
   {
     method: 'POST',
     path: BasePath,
-    handler: (request, h) => handlers.postSongHandler(request, h),
+    handler: handler.postSongHandler,
   },
   {
     method: 'GET',
     path: BasePath,
-    handler: (request, h) => handlers.getSongsHandler(request, h),
+    handler: handler.getSongsHandler,
   },
   {
     method: 'GET',
     path: BasePathWithIdParam,
-    handler: (request, h) => handlers.getSongByIdHandler(request, h),
+    handler: handler.getSongByIdHandler,
   },
   {
     method: 'PUT',
     path: BasePathWithIdParam,
-    handler: (request, h) => handlers.putSongByIdHandler(request, h),
+    handler: handler.putSongByIdHandler,
   },
   {
     method: 'DELETE',
     path: BasePathWithIdParam,
-    handler: (request, h) => handlers.deleteSongByIdHandler(request, h),
+    handler: handler.deleteSongByIdHandler,
   },
 ];
 

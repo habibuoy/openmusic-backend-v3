@@ -1,9 +1,12 @@
+const autoBind = require('auto-bind');
 const { created } = require('../responseObject');
 
 class UserHandler {
   constructor(userService, validator) {
     this._service = userService;
     this._validator = validator;
+
+    autoBind(this);
   }
 
   async postUserHandler(request, h) {

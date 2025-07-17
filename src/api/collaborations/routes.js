@@ -2,11 +2,11 @@ const { JwtAuthStrategyName } = require('../../auth');
 
 const BasePath = '/collaborations';
 
-const routes = (handlers) => [
+const routes = (handler) => [
   {
     method: 'POST',
     path: BasePath,
-    handler: (request, h) => handlers.postCollaborationHandler(request, h),
+    handler: handler.postCollaborationHandler,
     options: {
       auth: JwtAuthStrategyName,
     },
@@ -14,7 +14,7 @@ const routes = (handlers) => [
   {
     method: 'DELETE',
     path: BasePath,
-    handler: (request, h) => handlers.deleteCollaborationHandler(request, h),
+    handler: handler.deleteCollaborationHandler,
     options: {
       auth: JwtAuthStrategyName,
     },

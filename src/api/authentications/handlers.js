@@ -1,3 +1,4 @@
+const autoBind = require('auto-bind');
 const { created, succeed } = require('../responseObject');
 
 class AuthenticationHandler {
@@ -6,6 +7,8 @@ class AuthenticationHandler {
     this._userService = userService;
     this._validator = validator;
     this._tokenManager = tokenManager;
+
+    autoBind(this);
   }
 
   async postAuthenticationHandler(request, h) {

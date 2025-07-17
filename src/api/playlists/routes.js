@@ -5,11 +5,11 @@ const BaseWithIdParamPath = `${BasePath}/{id}`;
 const SongsPath = `${BaseWithIdParamPath}/songs`;
 const ActivitiesPath = `${BaseWithIdParamPath}/activities`;
 
-const routes = (handlers) => [
+const routes = (handler) => [
   {
     method: 'POST',
     path: BasePath,
-    handler: (request, h) => handlers.postPlaylistsHandler(request, h),
+    handler: handler.postPlaylistsHandler,
     options: {
       auth: JwtAuthStrategyName,
     },
@@ -17,7 +17,7 @@ const routes = (handlers) => [
   {
     method: 'GET',
     path: BasePath,
-    handler: (request, h) => handlers.getPlaylistsHandler(request, h),
+    handler: handler.getPlaylistsHandler,
     options: {
       auth: JwtAuthStrategyName,
     },
@@ -25,7 +25,7 @@ const routes = (handlers) => [
   {
     method: 'DELETE',
     path: BaseWithIdParamPath,
-    handler: (request, h) => handlers.deletePlaylistsHandler(request, h),
+    handler: handler.deletePlaylistsHandler,
     options: {
       auth: JwtAuthStrategyName,
     },
@@ -33,7 +33,7 @@ const routes = (handlers) => [
   {
     method: 'POST',
     path: SongsPath,
-    handler: (request, h) => handlers.postSongsHandler(request, h),
+    handler: handler.postSongsHandler,
     options: {
       auth: JwtAuthStrategyName,
     },
@@ -41,7 +41,7 @@ const routes = (handlers) => [
   {
     method: 'GET',
     path: SongsPath,
-    handler: (request, h) => handlers.getSongsHandler(request, h),
+    handler: handler.getSongsHandler,
     options: {
       auth: JwtAuthStrategyName,
     },
@@ -49,7 +49,7 @@ const routes = (handlers) => [
   {
     method: 'DELETE',
     path: SongsPath,
-    handler: (request, h) => handlers.deleteSongsHandler(request, h),
+    handler: handler.deleteSongsHandler,
     options: {
       auth: JwtAuthStrategyName,
     },
@@ -57,7 +57,7 @@ const routes = (handlers) => [
   {
     method: 'GET',
     path: ActivitiesPath,
-    handler: (request, h) => handlers.getActivitiesHandler(request, h),
+    handler: handler.getActivitiesHandler,
     options: {
       auth: JwtAuthStrategyName,
     },

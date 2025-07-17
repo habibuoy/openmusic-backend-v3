@@ -4,7 +4,7 @@ const routes = (handler) => [
   {
     method: 'POST',
     path: BasePath,
-    handler: (request, h) => handler.postUserHandler(request, h),
+    handler: handler.postUserHandler,
   },
 ];
 

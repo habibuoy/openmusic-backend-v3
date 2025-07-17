@@ -1,9 +1,12 @@
+const autoBind = require('auto-bind');
 const { succeed, created } = require('../responseObject');
 
 class SongHandler {
   constructor(songService, songValidator) {
     this._service = songService;
     this._validator = songValidator;
+
+    autoBind(this);
   }
 
   async postSongHandler(request, h) {

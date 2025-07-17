@@ -1,3 +1,4 @@
+const autoBind = require('auto-bind');
 const { AuthorizationError } = require('../../errors/AuthorizationError');
 const { ClientError } = require('../../errors/ClientError');
 const { NotFoundError } = require('../../errors/NotFoundError');
@@ -15,6 +16,8 @@ class PlaylistHandler {
     this._songService = songService;
     this._collaborationService = collaborationService;
     this._validator = playlistValidator;
+
+    autoBind(this);
   }
 
   async postPlaylistsHandler(request, h) {

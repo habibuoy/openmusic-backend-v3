@@ -1,3 +1,4 @@
+const autoBind = require('auto-bind');
 const { succeed, created } = require('../responseObject');
 
 class CollaborationHandler {
@@ -11,6 +12,8 @@ class CollaborationHandler {
     this._validator = collaborationValidator;
     this._playlistService = playlistService;
     this._userService = userService;
+
+    autoBind(this);
   }
 
   async postCollaborationHandler(request, h) {
