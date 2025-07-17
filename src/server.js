@@ -1,33 +1,52 @@
-require('dotenv').config();
+/* eslint-disable import/order */
+
+// General
+const { AppConfig } = require('./shareds/AppConfig');
+
+// Frameworks
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+
+// Application, and Presentation
 const { ClientError } = require('./errors/ClientError');
+const { failed, systemFailed } = require('./api/responseObject');
+
+// Album
 const { AlbumService } = require('./services/postgres/AlbumService');
 const { AlbumValidator } = require('./validators/album/index');
 const albumPlugin = require('./api/albums/index');
+
+// Song
 const { SongService } = require('./services/postgres/SongService');
 const { SongValidator } = require('./validators/song/index');
 const songPlugin = require('./api/songs/index');
-const { failed, systemFailed } = require('./api/responseObject');
+
+// User
 const { UserService } = require('./services/postgres/UserService');
 const { UserValidator } = require('./validators/user');
 const userPlugin = require('./api/users');
+
+// Auth
 const { AuthenticationService } = require('./services/postgres/AuthenticationService');
 const { AuthenticationValidator } = require('./validators/authentication');
 const authPlugin = require('./api/authentications');
 const { TokenManager } = require('./tokenizer/TokenManager');
 const AuthConstants = require('./auth');
+
+// Playlist
 const { PlaylistService } = require('./services/postgres/PlaylistService');
 const { PlaylistValidator } = require('./validators/playlist');
 const playlistPlugin = require('./api/playlists');
+
+// Collaboration
 const { CollaborationService } = require('./services/postgres/CollaborationService');
 const { CollaborationValidator } = require('./validators/collaboration');
 const collaborationPlugin = require('./api/collaborations');
 
 async function init() {
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    port: AppConfig.server.Port,
+    host: AppConfig.server.Host,
     routes: {
       cors: {
         origin: ['*'],
@@ -40,12 +59,12 @@ async function init() {
   });
 
   server.auth.strategy(AuthConstants.JwtAuthStrategyName, AuthConstants.JwtAuthScheme, {
-    keys: process.env.ACCESS_TOKEN_KEY,
+    keys: AppConfig.auth.Jwt.AccessTokenKey,
     verify: {
       aud: false,
       iss: false,
       sub: false,
-      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+      maxAgeSec: AppConfig.auth.Jwt.TokenAge,
     },
     validate: (artifacts) => ({
       isValid: true,
