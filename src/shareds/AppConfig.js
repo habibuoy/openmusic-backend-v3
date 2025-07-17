@@ -1,15 +1,17 @@
 require('dotenv').config();
 
+const { env } = process;
+
 const AppConfig = {
   server: {
-    Host: process.env.HOST,
-    Port: process.env.PORT,
+    Host: env.HOST,
+    Port: env.PORT,
   },
   auth: {
     Jwt: {
-      AccessTokenKey: process.env.ACCESS_TOKEN_KEY,
-      RefreshTokenKey: process.env.REFRESH_TOKEN_KEY,
-      TokenAge: process.env.ACCESS_TOKEN_AGE,
+      AccessTokenKey: env.ACCESS_TOKEN_KEY,
+      RefreshTokenKey: env.REFRESH_TOKEN_KEY,
+      TokenAge: env.ACCESS_TOKEN_AGE,
     },
   },
 };
