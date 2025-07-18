@@ -94,8 +94,6 @@ class UserService {
     if (!rows.length) {
       throw new NotFoundError(`User with id '${id}' was not found`);
     }
-
-    return true;
   }
 }
 

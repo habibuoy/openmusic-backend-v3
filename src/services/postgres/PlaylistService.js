@@ -4,6 +4,7 @@ const { InvariantError } = require('../../errors/InvariantError');
 const { NotFoundError } = require('../../errors/NotFoundError');
 const { AuthorizationError } = require('../../errors/AuthorizationError');
 const PlaylistActivityActionType = require('../PlaylistActivityActionType');
+const { playlistMapper } = require('../../mappers/playlistMapper');
 
 class PlaylistService {
   constructor() {
@@ -105,10 +106,7 @@ class PlaylistService {
       throw new NotFoundError(`Playlist with id ${id}} was not found`);
     }
 
-    return {
-      playlistId: rows[0].playlist_id,
-      activities: rows[0].activities,
-    };
+    return playlistMapper.activitiesFromDb(rows[0]);
   }
 
   async addSongToPlaylist(playlistId, songId) {
