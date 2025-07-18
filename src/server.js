@@ -59,6 +59,9 @@ const uploadPlugin = require('./api/uploads');
 const { LikeService } = require('./services/postgres/LikeService');
 const likePlugin = require('./api/likes');
 
+// Cache
+const { CacheService } = require('./services/cache/CacheService');
+
 const AlbumCoversUploadDirectory = path.resolve(__dirname, 'api/uploads/files/albums/covers');
 
 async function init() {
@@ -199,6 +202,7 @@ async function init() {
   });
 
   const likeService = new LikeService();
+  const cacheService = new CacheService();
 
   await server.register({
     plugin: likePlugin,
@@ -206,6 +210,7 @@ async function init() {
       likeService,
       userService,
       albumService,
+      cacheService,
     },
   });
 

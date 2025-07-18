@@ -17,6 +17,9 @@ const AppConfig = {
   rabbitmq: {
     Server: env.RABBITMQ_SERVER,
   },
+  redis: {
+    Host: env.REDIS_SERVER,
+  },
 };
 
 module.exports = { AppConfig };
