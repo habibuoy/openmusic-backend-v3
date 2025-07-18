@@ -2,10 +2,12 @@
 
 // General
 const { AppConfig } = require('./shareds/AppConfig');
+const path = require('path');
 
 // Frameworks
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
 
 // Application, and Presentation
 const { ClientError } = require('./errors/ClientError');
@@ -48,6 +50,13 @@ const { ProducerService } = require('./services/rabbitmq/ProducerService');
 const { ExportValidator } = require('./validators/export');
 const exportPlugin = require('./api/exports');
 
+// Upload
+const { LocalStorageService } = require('./services/storage/LocalStorageService');
+const { UploadValidator } = require('./validators/upload');
+const uploadPlugin = require('./api/uploads');
+
+const AlbumCoversUploadDirectory = path.resolve(__dirname, 'api/uploads/files/albums/covers');
+
 async function init() {
   const server = Hapi.server({
     port: AppConfig.server.Port,
@@ -59,9 +68,14 @@ async function init() {
     },
   });
 
-  await server.register({
-    plugin: Jwt,
-  });
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+    {
+      plugin: Inert,
+    },
+  ]);
 
   server.auth.strategy(AuthConstants.JwtAuthStrategyName, AuthConstants.JwtAuthScheme, {
     keys: AppConfig.auth.Jwt.AccessTokenKey,
@@ -166,6 +180,17 @@ async function init() {
       producerService: ProducerService,
       playlistService,
       exportValidator: ExportValidator,
+    },
+  });
+
+  const storageService = new LocalStorageService(AlbumCoversUploadDirectory);
+
+  await server.register({
+    plugin: uploadPlugin,
+    options: {
+      storageService,
+      albumService,
+      uploadValidator: UploadValidator,
     },
   });
 

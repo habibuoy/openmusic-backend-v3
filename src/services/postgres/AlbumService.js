@@ -2,6 +2,7 @@ const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const { InvariantError } = require('../../errors/InvariantError');
 const { NotFoundError } = require('../../errors/NotFoundError');
+const { albumMapper } = require('../../mappers/albumMapper');
 
 class AlbumService {
   constructor() {
@@ -29,7 +30,7 @@ class AlbumService {
   async getAlbumById(id) {
     const query = {
       text: `
-        SELECT a.id, a.name, a.year, 
+        SELECT a.id, a.name, a.year, a.cover_url,
           COALESCE(json_agg(json_build_object('id', s.id, 'title', s.title, 'performer', s.performer)) 
           FILTER (WHERE s.id IS NOT NULL), '[]') as songs
         FROM albums a
@@ -46,7 +47,7 @@ class AlbumService {
       throw new NotFoundError(`Album with id '${id}' was not found`);
     }
 
-    return rows[0];
+    return albumMapper.fromDb(rows[0]);
   }
 
   async updateAlbumById(id, { name, year }) {
@@ -78,6 +79,34 @@ class AlbumService {
     }
 
     return rows[0];
+  }
+
+  async verifyAlbumExists(id) {
+    const query = {
+      text: 'SELECT id FROM albums WHERE id = $1',
+      values: [id],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    if (!rows.length) {
+      throw new NotFoundError(`Album with id '${id}' was not found`);
+    }
+
+    return true;
+  }
+
+  async addAlbumCover(id, url) {
+    const query = {
+      text: 'UPDATE albums SET cover_url = $1 WHERE id = $2 RETURNING id',
+      values: [url, id],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    if (!rows.length) {
+      throw new NotFoundError(`Album with id ${id} was not found`);
+    }
   }
 }
 

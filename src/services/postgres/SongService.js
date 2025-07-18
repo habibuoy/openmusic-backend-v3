@@ -26,7 +26,7 @@ class SongService {
       throw new InvariantError(`Failed adding song ${title}`);
     }
 
-    return rows.map(songMapper.fromDb)[0];
+    return songMapper.fromDb(rows[0]);
   }
 
   async getSongs(songQuery) {
@@ -66,7 +66,7 @@ class SongService {
       throw new NotFoundError(`Song with id ${id} was not found`);
     }
 
-    return rows.map(songMapper.fromDb)[0];
+    return songMapper.fromDb(rows[0]);
   }
 
   async updateSongById(id, {
@@ -84,7 +84,7 @@ class SongService {
       throw new NotFoundError(`Failed updating song with id ${id}`);
     }
 
-    return rows.map(songMapper.fromDb)[0];
+    return songMapper.fromDb(rows[0]);
   }
 
   async deleteSongById(id) {
