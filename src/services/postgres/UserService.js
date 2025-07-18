@@ -82,6 +82,21 @@ class UserService {
       throw new InvariantError(`Failed to add user. Username ${username} already exists`);
     }
   }
+
+  async verifyUserExists(id) {
+    const query = {
+      text: 'SELECT id FROM users WHERE id = $1',
+      values: [id],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    if (!rows.length) {
+      throw new NotFoundError(`User with id '${id}' was not found`);
+    }
+
+    return true;
+  }
 }
 
 module.exports = { UserService };

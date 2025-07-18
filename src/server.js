@@ -55,6 +55,10 @@ const { LocalStorageService } = require('./services/storage/LocalStorageService'
 const { UploadValidator } = require('./validators/upload');
 const uploadPlugin = require('./api/uploads');
 
+// Like
+const { LikeService } = require('./services/postgres/LikeService');
+const likePlugin = require('./api/likes');
+
 const AlbumCoversUploadDirectory = path.resolve(__dirname, 'api/uploads/files/albums/covers');
 
 async function init() {
@@ -191,6 +195,17 @@ async function init() {
       storageService,
       albumService,
       uploadValidator: UploadValidator,
+    },
+  });
+
+  const likeService = new LikeService();
+
+  await server.register({
+    plugin: likePlugin,
+    options: {
+      likeService,
+      userService,
+      albumService,
     },
   });
 
