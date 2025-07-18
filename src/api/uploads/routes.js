@@ -24,7 +24,7 @@ const routes = (handler) => [
     path: AlbumCoversPath,
     handler: {
       directory: {
-        path: path.resolve(__dirname, 'files/albums/'),
+        path: path.resolve(__dirname, 'files/albums/covers'),
       },
     },
   },
