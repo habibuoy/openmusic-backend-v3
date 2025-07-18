@@ -14,6 +14,9 @@ const AppConfig = {
       TokenAge: env.ACCESS_TOKEN_AGE,
     },
   },
+  rabbitmq: {
+    Server: env.RABBITMQ_SERVER,
+  },
 };
 
 module.exports = { AppConfig };
