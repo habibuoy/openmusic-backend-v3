@@ -128,8 +128,9 @@ async function init() {
   await server.register({
     plugin: albumPlugin,
     options: {
-      service: albumService,
-      validator: AlbumValidator,
+      albumService,
+      albumValidator: AlbumValidator,
+      cacheService,
     },
   });
 
@@ -205,6 +206,7 @@ async function init() {
       storageService,
       albumService,
       uploadValidator: UploadValidator,
+      cacheService,
     },
   });
 

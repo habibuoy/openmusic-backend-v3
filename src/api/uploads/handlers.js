@@ -1,12 +1,14 @@
 const autoBind = require('auto-bind');
 const { created, succeed } = require('../responseObject');
 const { AppConfig } = require('../../shareds/AppConfig');
+const { AlbumCachePrefix } = require('../CacheConstants');
 
 class UploadHandler {
-  constructor(storageService, albumService, uploadValidator) {
+  constructor(storageService, albumService, uploadValidator, cacheService) {
     this._storageService = storageService;
     this._albumService = albumService;
     this._validator = uploadValidator;
+    this._cacheService = cacheService;
 
     autoBind(this);
   }
@@ -29,6 +31,8 @@ class UploadHandler {
     });
 
     await this._albumService.addAlbumCover(id, urlPath);
+
+    await this._cacheService.delete(`${AlbumCachePrefix}${id}`);
 
     return created(h, {
       message: 'Successfully uploaded album cover',
