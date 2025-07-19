@@ -121,12 +121,16 @@ async function init() {
     return h.continue;
   });
 
+  const cacheService = new CacheService();
+  const playlistService = new PlaylistService();
+
   const albumService = new AlbumService();
   await server.register({
     plugin: albumPlugin,
     options: {
-      service: albumService,
-      validator: AlbumValidator,
+      albumService,
+      albumValidator: AlbumValidator,
+      cacheService,
     },
   });
 
@@ -134,8 +138,10 @@ async function init() {
   await server.register({
     plugin: songPlugin,
     options: {
-      service: songService,
-      validator: SongValidator,
+      songService,
+      playlistService,
+      songValidator: SongValidator,
+      cacheService,
     },
   });
 
@@ -159,8 +165,8 @@ async function init() {
     },
   });
 
-  const playlistService = new PlaylistService();
   const collaborationService = new CollaborationService();
+
   await server.register({
     plugin: playlistPlugin,
     options: {
@@ -168,6 +174,7 @@ async function init() {
       songService,
       collaborationService,
       playlistValidator: PlaylistValidator,
+      cacheService,
     },
   });
 
@@ -178,6 +185,7 @@ async function init() {
       playlistService,
       userService,
       collaborationValidator: CollaborationValidator,
+      cacheService,
     },
   });
 
@@ -198,11 +206,11 @@ async function init() {
       storageService,
       albumService,
       uploadValidator: UploadValidator,
+      cacheService,
     },
   });
 
   const likeService = new LikeService();
-  const cacheService = new CacheService();
 
   await server.register({
     plugin: likePlugin,

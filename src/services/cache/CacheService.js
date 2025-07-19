@@ -39,6 +39,22 @@ class CacheService {
   async delete(key) {
     await this._cache.del(key);
   }
+
+  async getOrCreate(key, factory, options = {
+    expirationInSeconds: 1800,
+  }) {
+    let result;
+    let fromCache = false;
+    try {
+      result = await this.get(key);
+      fromCache = true;
+    } catch (error) {
+      result = await factory();
+      await this.set(key, result, options);
+    }
+
+    return { result, fromCache };
+  }
 }
 
 module.exports = { CacheService };

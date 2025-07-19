@@ -4,6 +4,11 @@ const { ClientError } = require('../../errors/ClientError');
 const { NotFoundError } = require('../../errors/NotFoundError');
 const PlaylistActivityActionType = require('../../services/PlaylistActivityActionType');
 const { succeed, created } = require('../responseObject');
+const {
+  PlaylistCachePrefix,
+  PlaylistSongsCachePrefix,
+  PlaylistActivitiesCachePrefix,
+} = require('../CacheConstants');
 
 class PlaylistHandler {
   constructor(
@@ -11,11 +16,13 @@ class PlaylistHandler {
     songService,
     collaborationService,
     playlistValidator,
+    cacheService,
   ) {
     this._service = playlistService;
     this._songService = songService;
     this._collaborationService = collaborationService;
     this._validator = playlistValidator;
+    this._cacheService = cacheService;
 
     autoBind(this);
   }
@@ -28,6 +35,8 @@ class PlaylistHandler {
 
     const result = await this._service.addPlaylist({ name, ownerId: userId });
 
+    await this._deletePlaylistCache(userId);
+
     return created(h, {
       data: {
         playlistId: result,
@@ -38,13 +47,18 @@ class PlaylistHandler {
   async getPlaylistsHandler(request, h) {
     const { userId } = request.auth.credentials;
 
-    const result = await this._service.getPlaylists(userId);
+    const cacheKey = `${PlaylistCachePrefix}${userId}`;
+
+    const { result, fromCache } = await this._cacheService.getOrCreate(
+      cacheKey,
+      async () => JSON.stringify(await this._service.getPlaylists(userId)),
+    );
 
     return succeed(h, {
       data: {
-        playlists: result,
+        playlists: JSON.parse(result),
       },
-    });
+    }, { fromCache });
   }
 
   async deletePlaylistsHandler(request, h) {
@@ -52,7 +66,10 @@ class PlaylistHandler {
     const { userId } = request.auth.credentials;
 
     await this._service.verifyPlaylistOwner(id, userId);
-    await this._service.deletePlaylist(id);
+
+    const result = await this._service.deletePlaylist(id);
+
+    await this._deletePlaylistCache(userId, result);
 
     return succeed(h, {
       message: 'Successfully deleted playlist',
@@ -79,6 +96,8 @@ class PlaylistHandler {
       action: PlaylistActivityActionType.ADD,
     });
 
+    await this._deletePlaylistSongsCache(id);
+
     return created(h, {
       message: 'Successfully added song to playlist',
     });
@@ -90,13 +109,18 @@ class PlaylistHandler {
 
     await this._verifyPlaylistAccess(id, userId);
 
-    const result = await this._service.getPlaylistSongs(id);
+    const cacheKey = `${PlaylistSongsCachePrefix}${id}`;
+
+    const { result, fromCache } = await this._cacheService.getOrCreate(
+      cacheKey,
+      async () => JSON.stringify(await this._service.getPlaylistSongs(id)),
+    );
 
     return succeed(h, {
       data: {
-        playlist: result,
+        playlist: JSON.parse(result),
       },
-    });
+    }, { fromCache });
   }
 
   async deleteSongsHandler(request, h) {
@@ -117,6 +141,8 @@ class PlaylistHandler {
       action: PlaylistActivityActionType.DLT,
     });
 
+    await this._deletePlaylistSongsCache(id);
+
     return succeed(h, {
       message: 'Successfully deleted song from playlist',
     });
@@ -128,11 +154,16 @@ class PlaylistHandler {
 
     await this._verifyPlaylistAccess(playlistId, userId);
 
-    const result = await this._service.getActivities(playlistId);
+    const cacheKey = `${PlaylistActivitiesCachePrefix}${playlistId}`;
+
+    const { result, fromCache } = await this._cacheService.getOrCreate(
+      cacheKey,
+      async () => JSON.stringify(await this._service.getActivities(playlistId)),
+    );
 
     return succeed(h, {
-      data: result,
-    });
+      data: JSON.parse(result),
+    }, { fromCache });
   }
 
   async _verifyPlaylistAccess(playlistId, userId) {
@@ -155,6 +186,22 @@ class PlaylistHandler {
         }
       }
     }
+  }
+
+  async _deletePlaylistCache(userId, playlistId = undefined) {
+    await this._cacheService.delete(`${PlaylistCachePrefix}${userId}`);
+    if (playlistId) {
+      await this._deletePlaylistActivitiesCache(playlistId);
+    }
+  }
+
+  async _deletePlaylistSongsCache(playlistId) {
+    await this._cacheService.delete(`${PlaylistSongsCachePrefix}${playlistId}`);
+    await this._deletePlaylistActivitiesCache(playlistId);
+  }
+
+  async _deletePlaylistActivitiesCache(playlistId) {
+    await this._cacheService.delete(`${PlaylistActivitiesCachePrefix}${playlistId}`);
   }
 }
 

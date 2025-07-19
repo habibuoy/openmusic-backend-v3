@@ -1,10 +1,12 @@
 const autoBind = require('auto-bind');
 const { created, succeed } = require('../responseObject');
+const { AlbumCachePrefix } = require('../CacheConstants');
 
 class AlbumHandler {
-  constructor(albumService, albumValidator) {
+  constructor(albumService, albumValidator, cacheService) {
     this._service = albumService;
     this._validator = albumValidator;
+    this._cacheService = cacheService;
 
     autoBind(this);
   }
@@ -22,9 +24,18 @@ class AlbumHandler {
   async getAlbumByIdHandler(request, h) {
     const { id } = request.params;
 
-    const result = await this._service.getAlbumById(id);
+    const cacheKey = `${AlbumCachePrefix}${id}`;
 
-    return succeed(h, { data: { album: result } });
+    const { result, fromCache } = await this._cacheService.getOrCreate(
+      cacheKey,
+      async () => JSON.stringify(await this._service.getAlbumById(id)),
+    );
+
+    return succeed(h, {
+      data: {
+        album: JSON.parse(result),
+      },
+    }, { fromCache });
   }
 
   async putAlbumByIdHandler(request, h) {
@@ -34,6 +45,7 @@ class AlbumHandler {
     const { name, year } = request.payload;
 
     const result = await this._service.updateAlbumById(id, { name, year });
+    await this._deleteAlbumCache(id);
 
     return succeed(h, { message: `Successfully updated album with id ${result.id}` });
   }
@@ -42,8 +54,14 @@ class AlbumHandler {
     const { id } = request.params;
 
     const result = await this._service.deleteAlbumById(id);
+    await this._deleteAlbumCache(id);
 
     return succeed(h, { message: `Succesfully deleted album with id ${result.id}` });
+  }
+
+  async _deleteAlbumCache(albumId) {
+    const cacheKey = `${AlbumCachePrefix}${albumId}`;
+    await this._cacheService.delete(cacheKey);
   }
 }
 

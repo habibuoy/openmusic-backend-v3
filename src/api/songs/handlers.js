@@ -2,9 +2,11 @@ const autoBind = require('auto-bind');
 const { succeed, created } = require('../responseObject');
 
 class SongHandler {
-  constructor(songService, songValidator) {
+  constructor(songService, playlistService, songValidator, cacheService) {
     this._service = songService;
+    this._playlistService = playlistService;
     this._validator = songValidator;
+    this._cacheService = cacheService;
 
     autoBind(this);
   }
@@ -52,6 +54,12 @@ class SongHandler {
     const { id } = request.params;
 
     const result = await this._service.deleteSongById(id);
+
+    const playlistsResult = await this._playlistService.deleteSongFromPlaylists(id);
+
+    if (playlistsResult.length > 0) {
+      await Promise.all(playlistsResult.map((p) => this._cacheService.delete(p.id)));
+    }
 
     return succeed(h, {
       message: `Successfully deleted song with id ${result}`,

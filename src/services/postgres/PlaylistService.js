@@ -4,6 +4,7 @@ const { InvariantError } = require('../../errors/InvariantError');
 const { NotFoundError } = require('../../errors/NotFoundError');
 const { AuthorizationError } = require('../../errors/AuthorizationError');
 const PlaylistActivityActionType = require('../PlaylistActivityActionType');
+const { playlistMapper } = require('../../mappers/playlistMapper');
 
 class PlaylistService {
   constructor() {
@@ -87,7 +88,7 @@ class PlaylistService {
               'title', s.title, 
               'action', pa.action,
               'time', pa.time
-            )
+            ) ORDER BY pa.time
           ) activities
           FROM playlist_activities pa
           LEFT JOIN users u ON u.id = pa.user_id
@@ -105,10 +106,7 @@ class PlaylistService {
       throw new NotFoundError(`Playlist with id ${id}} was not found`);
     }
 
-    return {
-      playlistId: rows[0].playlist_id,
-      activities: rows[0].activities,
-    };
+    return playlistMapper.activitiesFromDb(rows[0]);
   }
 
   async addSongToPlaylist(playlistId, songId) {
@@ -133,7 +131,7 @@ class PlaylistService {
     action = PlaylistActivityActionType.ERR,
   }) {
     const id = `actv-${nanoid(16)}`;
-    const inputTime = (new Date()).toUTCString();
+    const inputTime = (new Date()).toISOString();
 
     const query = {
       text: 'INSERT INTO playlist_activities VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
@@ -154,6 +152,8 @@ class PlaylistService {
     if (!rows.length) {
       throw new NotFoundError(`Playlist with id ${id} was not found`);
     }
+
+    return rows[0].id;
   }
 
   async deleteSongFromPlaylist(playlistId, songId) {
@@ -167,6 +167,20 @@ class PlaylistService {
     if (!rows.length) {
       throw new InvariantError(`Failed to delete song with id ${songId} from playlist with id ${playlistId}`);
     }
+  }
+
+  async deleteSongFromPlaylists(songId) {
+    const query = {
+      text: `
+        DELETE FROM playlist_songs
+        WHERE song_id = $1 RETURNING playlist_id
+      `,
+      values: [songId],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    return rows.map(playlistMapper.playlistIdsFromDb);
   }
 
   async verifyPlaylistOwner(playlistId, userId) {

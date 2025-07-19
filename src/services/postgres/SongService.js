@@ -100,7 +100,7 @@ class SongService {
       throw new NotFoundError(`Song with id ${id} was not found`);
     }
 
-    return rows.map[0];
+    return rows[0].id;
   }
 }
 
