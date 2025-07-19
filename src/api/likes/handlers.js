@@ -1,5 +1,6 @@
 const autoBind = require('auto-bind');
 const { created, succeed } = require('../responseObject');
+const { AlbumLikesCachePrefix } = require('../CacheConstants');
 
 class LikeHandler {
   constructor(likeService, userService, albumService, cacheService) {
@@ -23,7 +24,7 @@ class LikeHandler {
 
     await this._likeService.addLike(userId, albumId);
 
-    await this._cacheService.delete(`${this._albumLikesCachePrefix}:${albumId}`);
+    await this._cacheService.delete(`${AlbumLikesCachePrefix}:${albumId}`);
 
     return created(h, {
       message: 'Successfully liked album',
@@ -35,7 +36,7 @@ class LikeHandler {
 
     await this._albumService.verifyAlbumExists(albumId);
 
-    const cacheKey = `${this._albumLikesCachePrefix}:${albumId}`;
+    const cacheKey = `${AlbumLikesCachePrefix}:${albumId}`;
 
     const { result, fromCache } = await this._cacheService.getOrCreate(
       cacheKey,
@@ -59,7 +60,7 @@ class LikeHandler {
 
     await this._likeService.deleteLike(userId, albumId);
 
-    await this._cacheService.delete(`${this._albumLikesCachePrefix}:${albumId}`);
+    await this._cacheService.delete(`${AlbumLikesCachePrefix}:${albumId}`);
 
     return succeed(h, {
       message: 'Successfully deleted album',

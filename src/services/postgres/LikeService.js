@@ -57,7 +57,7 @@ class LikeService {
     const { rows } = await this._pool.query(query);
 
     if (!rows.length) {
-      throw new NotFoundError('User hasn\'t like this album');
+      throw new NotFoundError('User hasn\'t liked this album');
     }
 
     return rows[0].id;
