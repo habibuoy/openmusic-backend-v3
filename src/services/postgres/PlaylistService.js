@@ -88,7 +88,7 @@ class PlaylistService {
               'title', s.title, 
               'action', pa.action,
               'time', pa.time
-            )
+            ) ORDER BY pa.time
           ) activities
           FROM playlist_activities pa
           LEFT JOIN users u ON u.id = pa.user_id
@@ -131,7 +131,7 @@ class PlaylistService {
     action = PlaylistActivityActionType.ERR,
   }) {
     const id = `actv-${nanoid(16)}`;
-    const inputTime = (new Date()).toUTCString();
+    const inputTime = (new Date()).toISOString();
 
     const query = {
       text: 'INSERT INTO playlist_activities VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
