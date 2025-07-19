@@ -36,10 +36,17 @@ const systemFailed = (h, { message }) => baseResponse(h, {
   status: 'error', statusCode: 500, message,
 });
 
-const succeed = (h, { message = null, data = null }) => baseResponse(
-  h,
-  { message, data },
-);
+const succeed = (h, { message = null, data = null }, responseOptions = {
+  fromCache: false,
+}) => {
+  const response = baseResponse(h, { message, data });
+
+  if (responseOptions.fromCache) {
+    response.header('X-Data-Source', 'cache');
+  }
+
+  return response;
+};
 
 const created = (h, { message = null, data = null }) => baseResponse(
   h,

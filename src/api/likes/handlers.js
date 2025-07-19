@@ -35,29 +35,18 @@ class LikeHandler {
 
     await this._albumService.verifyAlbumExists(albumId);
 
-    let result;
-    let cached = false;
+    const cacheKey = `${this._albumLikesCachePrefix}:${albumId}`;
 
-    try {
-      result = JSON.parse(await this._cacheService.get(`${this._albumLikesCachePrefix}:${albumId}`));
-      cached = true;
-    } catch (error) {
-      result = await this._likeService.getLikesCount(albumId);
-      await this._cacheService.set(`${this._albumLikesCachePrefix}:${albumId}`, JSON.stringify(result));
-    }
+    const { result, fromCache } = await this._cacheService.getOrCreate(
+      cacheKey,
+      async () => JSON.stringify(await this._likeService.getLikesCount(albumId)),
+    );
 
-    const response = succeed(h, {
+    return succeed(h, {
       data: {
-        likes: result,
+        likes: JSON.parse(result),
       },
-    });
-
-    if (cached) {
-      response
-        .header('X-DATA-SOURCE', 'cache');
-    }
-
-    return response;
+    }, { fromCache });
   }
 
   async deleteLikesHandler(request, h) {
