@@ -1,5 +1,6 @@
 const autoBind = require('auto-bind');
 const { succeed, created } = require('../responseObject');
+const { UserCachePrefix } = require('../CacheConstants');
 
 class SongHandler {
   constructor(songService, playlistService, songValidator, cacheService) {
@@ -33,9 +34,18 @@ class SongHandler {
   async getSongByIdHandler(request, h) {
     const { id } = request.params;
 
-    const result = await this._service.getSongById(id);
+    const cacheKey = `${UserCachePrefix}${id}`;
 
-    return succeed(h, { data: { song: result } });
+    const { result, fromCache } = await this._cacheService.getOrCreate(
+      cacheKey,
+      async () => JSON.stringify(await this._service.getSongById(id)),
+    );
+
+    return succeed(h, {
+      data: {
+        song: JSON.parse(result),
+      },
+    }, { fromCache });
   }
 
   async putSongByIdHandler(request, h) {
@@ -44,6 +54,8 @@ class SongHandler {
     const { id } = request.params;
 
     const result = await this._service.updateSongById(id, request.payload);
+
+    await this._deleteSongCache(id);
 
     return succeed(h, {
       message: `Successfully updated song with id ${result}`,
@@ -57,6 +69,8 @@ class SongHandler {
 
     const playlistsResult = await this._playlistService.deleteSongFromPlaylists(id);
 
+    await this._deleteSongCache(id);
+
     if (playlistsResult.length > 0) {
       await Promise.all(playlistsResult.map((p) => this._cacheService.delete(p.id)));
     }
@@ -64,6 +78,10 @@ class SongHandler {
     return succeed(h, {
       message: `Successfully deleted song with id ${result}`,
     });
+  }
+
+  async _deleteSongCache(id) {
+    await this._cacheService.delete(`${UserCachePrefix}${id}`);
   }
 }
 
