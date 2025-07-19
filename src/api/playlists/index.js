@@ -9,12 +9,14 @@ module.exports = {
     songService,
     collaborationService,
     playlistValidator,
+    cacheService,
   }) => {
     const playlistHandler = new PlaylistHandler(
       playlistService,
       songService,
       collaborationService,
       playlistValidator,
+      cacheService,
     );
     const playlistRoutes = routes(playlistHandler);
 

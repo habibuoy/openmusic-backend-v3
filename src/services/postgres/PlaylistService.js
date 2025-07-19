@@ -152,6 +152,8 @@ class PlaylistService {
     if (!rows.length) {
       throw new NotFoundError(`Playlist with id ${id} was not found`);
     }
+
+    return rows[0].id;
   }
 
   async deleteSongFromPlaylist(playlistId, songId) {
@@ -165,6 +167,20 @@ class PlaylistService {
     if (!rows.length) {
       throw new InvariantError(`Failed to delete song with id ${songId} from playlist with id ${playlistId}`);
     }
+  }
+
+  async deleteSongFromPlaylists(songId) {
+    const query = {
+      text: `
+        DELETE FROM playlist_songs
+        WHERE song_id = $1 RETURNING playlist_id
+      `,
+      values: [songId],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    return rows.map(playlistMapper.playlistIdsFromDb);
   }
 
   async verifyPlaylistOwner(playlistId, userId) {

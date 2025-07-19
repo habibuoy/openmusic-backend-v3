@@ -35,7 +35,7 @@ class CollaborationService {
     const { rows } = await this._pool.query(query);
 
     if (!rows.length) {
-      throw new NotFoundError(`Collaboration with id ${id} was not found`);
+      throw new NotFoundError('Collaboration was not found');
     }
   }
 
