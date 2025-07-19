@@ -1,5 +1,5 @@
 const autoBind = require('auto-bind');
-const { created, succeed } = require('../responseObject');
+const { created } = require('../responseObject');
 const { AppConfig } = require('../../shareds/AppConfig');
 const { AlbumCachePrefix } = require('../CacheConstants');
 
