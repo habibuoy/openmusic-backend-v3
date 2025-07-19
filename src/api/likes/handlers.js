@@ -9,8 +9,6 @@ class LikeHandler {
     this._albumService = albumService;
     this._cacheService = cacheService;
 
-    this._albumLikesCachePrefix = 'albumLikes';
-
     autoBind(this);
   }
 
@@ -24,7 +22,7 @@ class LikeHandler {
 
     await this._likeService.addLike(userId, albumId);
 
-    await this._cacheService.delete(`${AlbumLikesCachePrefix}:${albumId}`);
+    await this._cacheService.delete(`${AlbumLikesCachePrefix}${albumId}`);
 
     return created(h, {
       message: 'Successfully liked album',
@@ -36,7 +34,7 @@ class LikeHandler {
 
     await this._albumService.verifyAlbumExists(albumId);
 
-    const cacheKey = `${AlbumLikesCachePrefix}:${albumId}`;
+    const cacheKey = `${AlbumLikesCachePrefix}${albumId}`;
 
     const { result, fromCache } = await this._cacheService.getOrCreate(
       cacheKey,
@@ -60,7 +58,7 @@ class LikeHandler {
 
     await this._likeService.deleteLike(userId, albumId);
 
-    await this._cacheService.delete(`${AlbumLikesCachePrefix}:${albumId}`);
+    await this._cacheService.delete(`${AlbumLikesCachePrefix}${albumId}`);
 
     return succeed(h, {
       message: 'Successfully deleted album',
